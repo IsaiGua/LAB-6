@@ -1,2 +1,59 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+#include <Arduino.h>
+#include <LiquidCrystal.h>
+
+// Configuración de la pantalla LCD (RS, E, D4, D5, D6, D7)
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+const int potPin1 = 34; // Pin para el primer potenciómetro
+const int potPin2 = 35; // Pin para el segundo potenciómetro
+const int buttonIncPin = 18; // Pin para el botón de incremento
+const int buttonDecPin = 19; // Pin para el botón de decremento
+
+int counter = 0;
+
+void setup() {
+  lcd.begin(16, 2); // Inicializa la pantalla LCD con 16 columnas y 2 filas
+  pinMode(potPin1, INPUT);
+  pinMode(potPin2, INPUT);
+  pinMode(buttonIncPin, INPUT_PULLUP);
+  pinMode(buttonDecPin, INPUT_PULLUP);
+}
+
+void loop() {
+  
+  // Parte 1: Leer potenciómetros y mostrar en LCD
+  int sensorValue1 = analogRead(potPin1);
+  int sensorValue2 = analogRead(potPin2);
+  
+  float voltage1 = sensorValue1 * (3.3 / 4095.0); // Convertir a voltaje (asumiendo ADC de 12 bits)
+  float voltage2 = sensorValue2 * (3.3 / 4095.0); // Convertir a voltaje (asumiendo ADC de 12 bits)
+  
+  int boton1 = digitalRead(buttonIncPin);
+  int boton2 = digitalRead(buttonDecPin);
+  
+  // Parte 2: Contador de 8 bits con botones
+  if (boton1 == LOW) {
+    counter++;
+    if (counter > 255) counter = 255; // Limitar a 8 bits
+    delay(200); // Antirrebote
+  }
+  
+  if (boton2 == LOW) {
+    counter--;
+    if (counter < 0) counter = 0; // Limitar a 8 bits
+    delay(200); // Antirrebote
+  }
+  
+  // Mostrar datos en el LCD
+  lcd.setCursor(0, 0);
+  lcd.print("V1:");
+  lcd.print(voltage1, 2); // Mostrar 2 decimales
+  lcd.print(" V2:");
+  lcd.print(voltage2, 2); // Mostrar 2 decimales
+  
+  lcd.setCursor(0, 1);
+  lcd.print("Count:");
+  lcd.print(counter);
+  
+  delay(500); // Actualizar cada 500 ms
+}
